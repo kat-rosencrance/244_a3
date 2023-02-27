@@ -2,8 +2,9 @@
 title: 'Task 1: PCA for Country-Level Environmental Variables'
 author: "Katherine Rosencrance"
 date: "2023-02-27"
-output: 
+output:
   html_document: 
+    code_folding: show
     theme: cosmo
 ---
 # Introduction
@@ -90,8 +91,6 @@ ggplot(pct_expl_df, aes(x = pc, y = v)) +
 
 **Figure 1: PCA Screeplot for Country-level Environmental Variables ** 
 
-
-```{r}
-
-```
+# Summary
+* hi
 

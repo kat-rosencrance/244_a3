@@ -1,0 +1,78 @@
+---
+title: 'Task 2: Hiearchical Clustering Stream Chemistry'
+author: "Katherine Rosencrance"
+date: "2023-02-27"
+output:
+  html_document: 
+    code_folding: show
+    theme: cosmo
+---
+# Introduction
+
+```{r setup, include=TRUE, echo = TRUE, warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(here)
+library(janitor)
+
+### Packages for cluster analysis:
+library(NbClust)
+library(cluster)
+library(factoextra)
+library(dendextend)
+library(ggdendro)
+```
+
+# Data Wrangling
+```{r}
+### read in the data
+stream <- read_csv(here("data", "sbc_lter_registered_stream_chemistry.csv")) %>% 
+  clean_names() %>% 
+  na_if(-999) %>% 
+   select(-timestamp_local) %>% ### removing timestamp from df
+  group_by(site_code) %>% ### grouping by site
+  summarize(
+    "Ammonium" = mean(nh4_u_m, na.rm = TRUE), ### finding the mean of each chemical indicator across each site
+    "Nitrate" = mean(no3_u_m, na.rm = TRUE),
+    "Phosphorous" = mean(po4_u_m, na.rm = TRUE),
+    "Dissolved nitrogen" = mean(tdn_u_m, na.rm = TRUE),
+    "Dissolved phosphorous" = mean(tdp_u_m, na.rm = TRUE),
+    "Particulate carbon" = mean(tpc_u_m, na.rm = TRUE),
+    "Particulate nitrogen" = mean(tpn_u_m, na.rm = TRUE),
+    "Particulate phosphorous" = mean(tpp_u_m, na.rm = TRUE),
+    "Suspended solids" = mean(tss_mgper_liter, na.rm = TRUE),
+    "Specific conductivity" = mean(spec_cond_u_spercm, na.rm = TRUE))
+
+```
+
+# Hierarchical Clustering
+```{r}
+### scale the data
+stream_scaled <- stream %>% 
+  select(2:11) %>% # remove stream code so we can scale only numbers
+  scale()
+
+### add the stream code back in as a row name
+rownames(stream_scaled) <- stream$site_code
+
+### euclidian distance
+euc_distance <- dist(stream_scaled, method = "euclidean")
+#euc_distance
+
+#### Perform hierarchical clustering by complete linkage with `stats::hclust()`
+hc_complete <- hclust(euc_distance, method = "complete" )
+
+### Plot it
+ggdendrogram(hc_complete, 
+             rotate = TRUE) +
+  theme_minimal() +
+  labs(x = "Stream Code", y = "Euclidian Distance")+
+  ggtitle("Complete Linkage Hierarchical Clustering Dendrogram")
+```
+
+**Figure 1: Dendrogram for Stream Chemistry in Santa Barbara County** 
+
+# Summary
+* 
+

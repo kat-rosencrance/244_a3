@@ -1,0 +1,97 @@
+---
+title: 'Task 1: PCA for Country-Level Environmental Variables'
+author: "Katherine Rosencrance"
+date: "2023-02-27"
+output: 
+  html_document: 
+    theme: cosmo
+---
+# Introduction
+
+```{r setup, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(janitor)
+library(ggfortify)
+
+```
+
+# Data Wrangling
+```{r}
+### read in the data
+world_env <- read_csv(here("data", "world_env_vars.csv")) %>% 
+  clean_names() %>% 
+  drop_na() %>%
+  mutate(accessibility_to_cities =
+                     case_when(accessibility_to_cities <= 100 ~ "Very High", 
+                              accessibility_to_cities <= 500 ~ "High",
+                              accessibility_to_cities <= 1000 ~ "Medium",
+                              accessibility_to_cities <= 11000 ~ "Low")) %>% 
+  mutate(accessibility_to_cities = factor(accessibility_to_cities, levels = c('Low', 'Medium', 'High', 'Very High')))
+
+```
+
+# PCA
+```{r}
+world_env_pca <- world_env %>%
+  select(cropland_cover, tree_canopy_cover, rain_mean_annual, temp_mean_annual, wind, cloudiness) %>% 
+  dplyr::select(where(is.numeric)) %>%
+  scale() %>%
+  prcomp()
+
+### see the loadings
+world_env_pca$rotation
+```
+
+# Biplot
+```{r}
+autoplot(world_env_pca,
+     	data = world_env,
+     	loadings = TRUE,
+     	colour = 'accessibility_to_cities',
+     	loadings.label = TRUE,
+     	loadings.colour = "black",
+     	loadings.label.colour = "black",
+     	loadings.label.vjust = -0.5,
+     	loadings.label.size = 3
+     	) +
+  ggtitle("PCA for World Environmental Variables")+
+  guides(color = guide_legend(title = "Accessibility to Cities"))+
+  scale_color_manual(values = c('red', 'orange', 'yellowgreen', 'darkgreen')) +
+  scale_fill_manual(values = c('red', 'orange', 'yellowgreen', 'darkgreen')) +
+  theme_minimal()
+
+```
+
+**Figure 1: PCA Biplot for Country-level Environmental Variables ** 
+
+
+# Screeplot
+```{r}
+sd_vec <- world_env_pca$sdev
+var_vec <- sd_vec^2 ### standard deviation is sqrt of variance!
+pc_names <- colnames(world_env_pca$rotation)
+
+pct_expl_df <- data.frame(v = var_vec,
+                          pct_v = var_vec / sum(var_vec),
+                          pc = fct_inorder(pc_names)) %>%
+  mutate(pct_lbl = paste0(round(pct_v*100, 1), '%'))
+
+ggplot(pct_expl_df, aes(x = pc, y = v)) +
+  geom_col(color = "navyblue", fill = "lightblue") +
+  ggtitle("Screeplot for World Environmental Variables")+
+  geom_text(aes(label = pct_lbl), vjust = 0, nudge_y = .002) +
+  labs(x = 'Principal component', y = 'Variance explained')+
+  theme_minimal()
+  
+```
+
+**Figure 1: PCA Screeplot for Country-level Environmental Variables ** 
+
+
+```{r}
+
+```
+

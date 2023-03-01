@@ -8,6 +8,20 @@ output:
     theme: cosmo
 ---
 # Introduction
+In this report we explore several world climatic variables at a country level. These data were acquired through the use of Google Earth Engine's publicly available remote sensing data. Final values were derived using the mean for each country at a reduction scale of 10km (zander_venter, 2018). First we will select a set of variables to analyze, then we will perform a principle component analysis visualized through a biplot and screeplot.
+
+**Variables of Interest**
+
+- cropland cover
+- tree canopy cover
+- annual rain (mean)
+- annual temperature (mean)
+- wind
+- cloudiness
+
+**N/A values**
+
+Observations with N/A values were dropped from the data set before selecting the variables of interest. This lowered the number of observations from 243 to 188 values. 
 
 ```{r setup, echo = TRUE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
@@ -23,27 +37,35 @@ library(ggfortify)
 ```{r}
 ### read in the data
 world_env <- read_csv(here("data", "world_env_vars.csv")) %>% 
-  clean_names() %>% 
-  drop_na() %>%
+  clean_names() %>%
   mutate(accessibility_to_cities =
                      case_when(accessibility_to_cities <= 100 ~ "Very High", 
                               accessibility_to_cities <= 500 ~ "High",
                               accessibility_to_cities <= 1000 ~ "Medium",
                               accessibility_to_cities <= 11000 ~ "Low")) %>% 
-  mutate(accessibility_to_cities = factor(accessibility_to_cities, levels = c('Low', 'Medium', 'High', 'Very High')))
+  mutate(accessibility_to_cities = factor(accessibility_to_cities, levels = c('Low', 'Medium', 'High', 'Very High'))) %>% 
+      drop_na()
+
+
+
 
 ```
 
 # PCA
 ```{r}
 world_env_pca <- world_env %>%
-  select(cropland_cover, tree_canopy_cover, rain_mean_annual, temp_mean_annual, wind, cloudiness) %>% 
+      select(cropland_cover, tree_canopy_cover, rain_mean_annual, temp_mean_annual, wind, cloudiness) %>% 
+  ### rename for biplot output
+    rename("cropland cover"= "cropland_cover",
+         "tree canopy cover" = "tree_canopy_cover",
+         "mean annual rain" = "rain_mean_annual",
+         "mean annual temp" = "temp_mean_annual") %>% 
   dplyr::select(where(is.numeric)) %>%
   scale() %>%
   prcomp()
 
 ### see the loadings
-world_env_pca$rotation
+#world_env_pca$rotation
 ```
 
 # Biplot
@@ -66,7 +88,7 @@ autoplot(world_env_pca,
 
 ```
 
-**Figure 1: PCA Biplot for Country-level Environmental Variables ** 
+**Figure 1: PCA Biplot for Country-level Environmental Variables ** Biplot displaying the results of the principal component analysis (PC 1 and PC2) for each country's selected world climate variables. Each point represents an observation based on the first two principal components, and the arrows represent the loading of variables for PC 1 and 2. Arrows point in the direction of increasing values for that variable. The color of the points represents each countries' accessibility to cities.
 
 
 # Screeplot
@@ -89,8 +111,15 @@ ggplot(pct_expl_df, aes(x = pc, y = v)) +
   
 ```
 
-**Figure 1: PCA Screeplot for Country-level Environmental Variables ** 
+**Figure 1: PCA Screeplot for Country-level Environmental Variables ** Screeplot displaying the variance explained by each principal component for selected world climatic variables. We must include 3 principal components to explain ~85% of the variance.
 
 # Summary
-* hi
+* Mean annual rain and tree canopy cover are the most closely correlated variables. This makes sense as vegetation requires proper water resources to survive.
+* Mean annual temperature and cropland cover are interestingly negatively correlated. As the temperature increases, the cropland cover tends to decrease. 
+* Most variables have a fairly long arrow indicating a large influence on the PC in which it is pointing.
+* There is no obvious clustering of the observations or colored points. This may indicate that there is not a strong relationship between the variables and country or accessibility.
+* The screeplot shows that we would need to include 3 PCA's to explain over 80% of the variance captured from the data. This means that some dimensions may dominate and hold more valuable information. 
 
+
+# Citation
+**Data Citation:** zander_vender. 2018, Environmental variables for world countries. CC0:Public Domain. https://www.kaggle.com/datasets/zanderventer/environmental-variables-for-world-countries?select=World_countries_env_vars.csv

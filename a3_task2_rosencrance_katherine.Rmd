@@ -42,7 +42,8 @@ stream <- read_csv(here("data", "sbc_lter_registered_stream_chemistry.csv")) %>%
     "Particulate nitrogen" = mean(tpn_u_m, na.rm = TRUE),
     "Particulate phosphorous" = mean(tpp_u_m, na.rm = TRUE),
     "Suspended solids" = mean(tss_mgper_liter, na.rm = TRUE),
-    "Specific conductivity" = mean(spec_cond_u_spercm, na.rm = TRUE))
+    "Specific conductivity" = mean(spec_cond_u_spercm, na.rm = TRUE)) %>% 
+  drop_na()
 
 ```
 
@@ -76,3 +77,5 @@ ggdendrogram(hc_complete,
 # Summary
 * 
 
+# Citation
+**Data Citation:** 

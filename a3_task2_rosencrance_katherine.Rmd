@@ -1,5 +1,5 @@
 ---
-title: 'Task 2: Hiearchical Clustering Stream Chemistry'
+title: 'Task 2: Hiearchical Clustering - Stream Chemistry Properties'
 author: "Katherine Rosencrance"
 date: "2023-02-27"
 output:
@@ -8,6 +8,7 @@ output:
     theme: cosmo
 ---
 # Introduction
+This report explores hierarchical clustering in stream water chemistry measurements beginning in 2000. All data were collected throughout the Santa Barbara county watershed -- weekly during non-storm flows in winter and bi-weekly during the summer (Santa Barbara Coastal LTER & Melack, 2019). The finalized complete linkage clustering dendrogram will display differences among the streams based on their properties. We will first find the mean of these properties, then group them by stream and run an agglomerative hierarchical cluster analysis using euclidean distance. Summary results will be shown in the dendrogram and summary section.
 
 ```{r setup, include=TRUE, echo = TRUE, warning = FALSE, message = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
@@ -57,7 +58,7 @@ stream_scaled <- stream %>%
 ### add the stream code back in as a row name
 rownames(stream_scaled) <- stream$site_code
 
-### euclidian distance
+### euclidean distance
 euc_distance <- dist(stream_scaled, method = "euclidean")
 #euc_distance
 
@@ -72,10 +73,12 @@ ggdendrogram(hc_complete,
   ggtitle("Complete Linkage Hierarchical Clustering Dendrogram")
 ```
 
-**Figure 1: Dendrogram for Stream Chemistry in Santa Barbara County** 
+**Figure 1: Dendrogram for Stream Chemistry in Santa Barbara County** Agglomerative hierarchical clustering dendrogram representing the similarities/dissimilarities in the data. This was performed using complete linkage and Euclidean distance.
 
 # Summary
-* 
+* Stream ON02 has its own branch on the dendrogram, indicating that it has the most different chemical properties.
+* MC00 and AB00 are in the most nested cluster. These two streams must have highly similar stream chemical properties.
+* The number of clusters can be determined based on the desired minimum euclidean distance and a horizontal slice in the dendrogram. Further research can be done to determine exact chemical properties and environmental factors leading to dissimilarities.
 
 # Citation
-**Data Citation:** 
+**Data Citation:** Santa Barbara Coastal LTER and J. Melack. 2019. SBC LTER: Land: Stream chemistry in the Santa Barbara Coastal drainage area, ongoing since 2000 ver 16. Environmental Data Initiative.
